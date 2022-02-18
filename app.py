@@ -1,66 +1,72 @@
-from uuid import uuid4
-
 from flask import Flask, jsonify, request
 
-from blockchain import Blockchain
-
-# Instantiate our Node
 app = Flask(__name__)
 
-# Generate a globally unique address for this node
-node_identifier = str(uuid4()).replace('-', '')
 
-# Instantiate the Blockchain
-blockchain = Blockchain()
-
-
-@app.route('/mine', methods=['GET'])
-def mine():
-    # We run the proof of work algorithm to get the next proof...
-    last_block = blockchain.last_block
-    last_proof = last_block['proof']
-    proof = blockchain.proof_of_work(last_proof)
-    # We must receive a reward for finding the proof.
-    # The sender is "0" to signify that this node has mined a new coin.
-    blockchain.new_transaction(
-        sender="0",
-        recipient=node_identifier,
-        amount=1,
-    )
-    # Forge the new Block by adding it to the chain
-    previous_hash = blockchain.hash(last_block)
-    block = blockchain.new_block(proof, previous_hash)
+@app.route('/health', methods=['GET'])
+def health():
     response = {
-        'message': "New Block Forged",
-        'index': block['index'],
-        'transactions': block['transactions'],
-        'proof': block['proof'],
-        'previous_hash': block['previous_hash'],
+        'status': 'running'
     }
     return jsonify(response), 200
 
 
-@app.route('/transactions/new', methods=['POST'])
-def new_transaction():
-    values = request.get_json()
-    # Check that the required fields are present in the POST data
-    required = ['sender', 'recipient', 'amount']
-    if not all(k in values for k in required):
-        return 'Missing values', 400
-    # Create a new Transaction
-    index = blockchain.new_transaction(values['sender'], values['recipient'], values['amount'])
-    response = {'message': f'Transaction will be added to Block {index}'}
-    return jsonify(response), 201
-
-
-@app.route('/chain', methods=['GET'])
-def full_chain():
+@app.route('/test_get', methods=['GET'])
+def test_get():
     response = {
-        'chain': blockchain.chain,
-        'length': len(blockchain.chain),
+        'success': True
+    }
+    return jsonify(response), 200
+
+
+@app.route('/test_get_with_query_param', methods=['GET'])
+def test_get_with_query_param():
+    query_params = request.args
+    response = {
+        'success': True,
+        'query_params': query_params
+    }
+    return jsonify(response), 200
+
+
+@app.route('/test_get_with_path_param/<path_param>', methods=['GET'])
+def test_get_with_path_param(path_param):
+    response = {
+        'success': True,
+        'path_param': path_param
+    }
+    return jsonify(response), 200
+
+
+@app.route('/test_post', methods=['POST'])
+def test_post():
+    data = request.get_json()
+    response = {
+        'success': True,
+        'data': data
+    }
+    return jsonify(response), 200
+
+
+@app.route('/test_put', methods=['PUT'])
+def test_put():
+    data = request.get_json()
+    response = {
+        'success': True,
+        'data': data
+    }
+    return jsonify(response), 200
+
+
+@app.route('/test_delete', methods=['DELETE'])
+def test_delete():
+    data = request.get_json()
+    response = {
+        'success': True,
+        'data': data
     }
     return jsonify(response), 200
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5555)
