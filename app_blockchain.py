@@ -3,9 +3,10 @@ from uuid import uuid4
 from flask import Flask, jsonify, request
 
 from models.blockchain import Blockchain
+from util.json_util import JSONEncoder
 
-# Instantiate our Node
 app = Flask(__name__)
+app.json_encoder = JSONEncoder
 
 # Generate a globally unique address for this node
 node_identifier = str(uuid4()).replace('-', '')
