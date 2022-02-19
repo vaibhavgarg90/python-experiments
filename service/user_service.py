@@ -3,7 +3,7 @@ import logging
 from bson import ObjectId
 from pymongo import MongoClient
 
-from service.env_properties import LOG_FILE_PATH, MONGO_HOST, MONGO_PORT, MONGO_DATABASE, MONGO_COLLECTION
+from util.env_util import LOG_FILE_PATH, MONGO_HOST, MONGO_PORT, MONGO_DATABASE, MONGO_COLLECTION
 
 # set up logging
 logging.basicConfig(filename=LOG_FILE_PATH, encoding='utf-8', level=logging.DEBUG)
