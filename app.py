@@ -2,10 +2,9 @@ import json
 
 from bson import ObjectId
 from flask import abort, Flask, jsonify, render_template, request
-
 from time import time
 
-from service import mongo_service
+from service import user_service
 from util.json_util import JSONEncoder
 
 app = Flask(__name__)
@@ -36,8 +35,8 @@ def insert_user():
         data = request.get_json()
         if "insert_time" not in data:
             data["insert_time"] = int(time())
-        user_id = mongo_service.insert_data(data)
-        user_db_data = mongo_service.get_by_id(user_id)
+        user_id = user_service.insert_user(data)
+        user_db_data = user_service.get_user_by_id(user_id)
         return jsonify(user_db_data), 200
     except Exception as e:
         abort(500, str(e))
@@ -45,7 +44,7 @@ def insert_user():
 
 @app.route('/user/<user_id>', methods=['GET'])
 def get_user_by_id(user_id):
-    user_db_data = mongo_service.get_by_id(user_id)
+    user_db_data = user_service.get_user_by_id(user_id)
     if not user_db_data:
         abort(404, f"User with id {user_id} not found")
     return jsonify(user_db_data), 200
@@ -55,7 +54,7 @@ def get_user_by_id(user_id):
 def list_users():
     query_params = request.args
     query = json.loads(query_params["query"])
-    users = list(mongo_service.list_data(query))
+    users = list(user_service.list_users(query))
     return jsonify(users), 200
 
 
@@ -65,18 +64,18 @@ def update_user(user_id):
     if "update_time" not in update_query:
         update_query["update_time"] = int(time())
     find_query = {"_id": ObjectId(user_id)}
-    user_db_data = mongo_service.get_by_id(user_id)
+    user_db_data = user_service.get_user_by_id(user_id)
     if not user_db_data:
         abort(404, f"User with id {user_id} not found")
-    mongo_service.update_data(find_query, update_query)
-    user_db_data = mongo_service.get_by_id(user_id)
+    user_service.update_user(find_query, update_query)
+    user_db_data = user_service.get_user_by_id(user_id)
     return jsonify(user_db_data), 200
 
 
 @app.route('/user/<user_id>', methods=['DELETE'])
 def delete_user(user_id):
     query = {"_id": ObjectId(user_id)}
-    count = mongo_service.delete_data(query)
+    count = user_service.delete_user(query)
     if not count:
         abort(404, f"User with id {user_id} not found")
     return jsonify({"count": count}), 200
